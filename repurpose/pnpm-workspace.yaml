@@ -1,0 +1,9 @@
+allowBuilds:
+  esbuild: set this to true or false
+  unrs-resolver: false
+minimumReleaseAgeExclude:
+  - framer-motion@13.4.3
+  - motion@13.4.3
+  - '@ai-sdk/anthropic@4.0.63'
+  - '@ai-sdk/gateway@4.0.92'
+  - ai@7.0.114
