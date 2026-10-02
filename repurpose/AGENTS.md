@@ -38,8 +38,8 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - `src/db/schema.ts` — single source of truth for types. Derive, don't redeclare.
 - `src/lib/` — env, ai client, redis, safe-action wrapper, utils.
 
-
 ## Feature pattern (reference implementation: src/features/voice)
+
 - `index.ts` exports the SERVER API (queries, actions, schema, pure helpers). Never import it from a
   client component — queries pull in `server-only`. Client code imports `./schema` and sibling components.
 - Streaming AI → route handler returning `toTextStreamResponse()` + `useObject` on the client.
@@ -49,6 +49,8 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - Validate route params (`z.uuid()`) before they reach Postgres.
 - Models come only from `getModel()` in `src/lib/ai.ts`. Features never import a provider SDK.
   Every task's system prompt contains a stable marker phrase so `ai-mock.ts` can pick a fixture.
+- Cross-feature: server code imports another feature's `index.ts`; client-safe code (schema, types,
+  pure helpers) is imported by path, e.g. `@/features/ingest/schema`.
 ## Non-negotiable rules
 
 1. **Types flow from the DB schema outward.** Use `InferSelectModel` / Zod `z.infer`.
@@ -67,7 +69,12 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 8. **Server Components by default.** Add `"use client"` only for interactivity, and push it to the leaf.
 9. **Secrets never reach the client.** Only `NEXT_PUBLIC_*` vars in client code. `src/lib/env.ts` is the
    only place `process.env` is read.
-
+13. Content enters the system ONLY as a `Source` from `features/ingest` (`buildSource` for text,
+    `fetchSource` for links). Nothing downstream accepts raw strings or URLs.
+14. Never `fetch()` a user-supplied URL directly. `features/ingest/url.ts#fetchPublic` is the only
+    outbound fetcher: private hosts blocked, redirects validated per hop, body capped, timeout set.
+15. Provider errors never reach the UI. Map them to specific human `AppError` messages inside the
+    feature (see `youtube.ts#mapSupadataError`).
 ## Motion & design rules
 
 - Import springs and variants from `src/components/motion/motion.config.ts`. **Never hardcode a duration,

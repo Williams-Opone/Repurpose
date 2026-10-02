@@ -45,7 +45,14 @@ lib → db
 components and lib never import from features. features never import from app.
 
 ## Decisions log
-
+- YouTube transcripts via Supadata (`text=true`, no timestamps); title/channel via YouTube oEmbed,
+  best-effort. Thumbnails come from i.ytimg.com only — we never proxy arbitrary article images.
+- Articles via Readability + jsdom on the Node runtime (`serverExternalPackages: ["jsdom"]`).
+  SSRF guard: private/loopback/link-local hosts rejected, redirects followed manually with
+  re-validation per hop, 2 MB body cap, 25 s timeout. Next step if this went to scale: resolve DNS
+  and verify the IP too (rebinding).
+- UX rule: a pasted link only triggers an import when the field is empty; typed links show an
+  Import button. Pasting a link inside prose stays prose.
 - 2025-xx-xx: React Compiler on → no manual memoization anywhere.
 - 2025-xx-xx: Route handler (not server action) for /api/generate because we need a streamed response.
 - 2025-xx-xx: Structured output per format instead of one big prompt → parallelism + per-format retry.
