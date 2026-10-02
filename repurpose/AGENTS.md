@@ -6,19 +6,20 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
-
 # AGENTS.md — Repurpose
 
 You are working in a production SaaS codebase. Read this fully before editing.
 Depth lives in `ARCHITECTURE.md` (system design) and `DESIGN.md` (visual + motion system).
 
 ## Project
+
 Repurpose turns one piece of content into platform-specific posts (Twitter/X thread,
 LinkedIn, newsletter, etc.) in the user's own brand voice. Next.js 16 App Router,
 TypeScript strict, Tailwind v4, Motion, Drizzle + Neon Postgres, Clerk, Stripe,
 Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Compiler is ON.
 
 ## Commands
+
 - `pnpm dev` — dev server (Turbopack)
 - `pnpm typecheck` — `tsc --noEmit`; must pass before any PR
 - `pnpm lint` / `pnpm lint:fix`
@@ -28,6 +29,7 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - Run `pnpm typecheck && pnpm lint && pnpm test` before declaring any task done.
 
 ## Layout (feature-based — respect it)
+
 - `src/app/**` — routes ONLY. Pages are thin: fetch via `features/*/queries.ts`, render components.
 - `src/features/<name>/` — `actions.ts` (server actions), `queries.ts` (reads), `schema.ts` (Zod),
   `components/`. Cross-feature imports go through the feature's `index.ts`.
@@ -36,7 +38,19 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - `src/db/schema.ts` — single source of truth for types. Derive, don't redeclare.
 - `src/lib/` — env, ai client, redis, safe-action wrapper, utils.
 
+
+## Feature pattern (reference implementation: src/features/voice)
+- `index.ts` exports the SERVER API (queries, actions, schema, pure helpers). Never import it from a
+  client component — queries pull in `server-only`. Client code imports `./schema` and sibling components.
+- Streaming AI → route handler returning `toTextStreamResponse()` + `useObject` on the client.
+  Non-streaming mutations → `authedAction`. Route handlers shape errors with `errorResponse()`.
+- Every query takes `userId` and filters by it. Ownership failures throw `AppError("NOT_FOUND")`,
+  never FORBIDDEN — don't leak that another user's id exists.
+- Validate route params (`z.uuid()`) before they reach Postgres.
+- Models come only from `getModel()` in `src/lib/ai.ts`. Features never import a provider SDK.
+  Every task's system prompt contains a stable marker phrase so `ai-mock.ts` can pick a fixture.
 ## Non-negotiable rules
+
 1. **Types flow from the DB schema outward.** Use `InferSelectModel` / Zod `z.infer`.
    Never `any`, never `as unknown as`, never `// @ts-ignore`. `noUncheckedIndexedAccess` is on — handle `undefined`.
 2. **Validate every boundary** with Zod: form input, server action input, AI output, webhooks, env.
@@ -55,6 +69,7 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
    only place `process.env` is read.
 
 ## Motion & design rules
+
 - Import springs and variants from `src/components/motion/motion.config.ts`. **Never hardcode a duration,
   easing, or spring in a component.** If you need a new preset, add it there.
 - Use `<FadeIn>`, `<StaggerContainer>`, `<PageTransition>` etc. from `components/motion`. Do not
@@ -67,19 +82,23 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - Every list/data view needs: loading skeleton (matching shape), empty state, error state.
 
 ## Style
+
 - Named exports. One component per file. Files kebab-case, components PascalCase.
 - Conventional commits: `feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`.
 - Prefer small, reviewable diffs. Don't refactor unrelated code in the same change.
-- Comments explain *why*, not *what*. No commented-out code.
+- Comments explain _why_, not _what_. No commented-out code.
 - Errors: throw typed errors inside features; `authedAction` shapes them. UI shows human messages,
+- UI primitives are Base UI (via shadcn). Composition uses the `render` prop, not `asChild`.
   never raw error strings.
 
 ## Testing expectations
+
 - Any pure function (thread splitter, char limits, URL parsing, voice-block renderer, usage period key)
   gets a Vitest test in a colocated `*.test.ts`.
 - Don't call real AI or Stripe in tests. Use `AI_PROVIDER=mock` and Stripe test fixtures.
 
 ## Do NOT
+
 - Install a new dependency without stating why in the PR/commit body.
 - Add a new top-level folder in `src/`.
 - Use `fetch` to call our own API routes from server code — call the function directly.
@@ -88,6 +107,7 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - Modify `src/db/migrations/*` by hand. Regenerate.
 
 ## When unsure
+
 Read `ARCHITECTURE.md` and the nearest existing feature (`features/voice` is the reference implementation).
 Match its patterns exactly. Ask before introducing a new pattern.
 <!-- END:nextjs-agent-rules -->
