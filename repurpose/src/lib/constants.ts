@@ -18,6 +18,12 @@ export const FREE_QUOTA_PER_MONTH = 5;
 // Ingestion
 export const MAX_SOURCE_WORDS = 8_000;
 export const SOURCE_WARN_WORDS = 7_000;
+export const MIN_SOURCE_WORDS = 20;
+export const MAX_SOURCE_CHARS = 60_000; // ≈ 8k words; hard cap for Zod
+export const MAX_SOURCE_TITLE_CHARS = 120;
+export const MAX_UPLOAD_BYTES = 1_000_000;
+export const MAX_ARTICLE_BYTES = 2_000_000;
+export const REMOTE_FETCH_TIMEOUT_MS = 25_000;
 
 // Generation
 export const GENERATION_TIMEOUT_MS = 45_000;

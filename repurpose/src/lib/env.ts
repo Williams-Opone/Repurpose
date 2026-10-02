@@ -22,6 +22,7 @@ const EnvSchema = z
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().startsWith("/"),
     NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: z.string().startsWith("/"),
     NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: z.string().startsWith("/"),
+    SUPADATA_API_KEY: z.string().min(1).optional(),
   })
   .superRefine((e, ctx) => {
     if (e.AI_PROVIDER === "google" && !e.GOOGLE_GENERATIVE_AI_API_KEY) {
