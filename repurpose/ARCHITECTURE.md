@@ -63,3 +63,5 @@ components and lib never import from features. features never import from app.
 - AI_PROVIDER=mock swaps in MockLanguageModelV2 streaming fixtures chosen by a system-prompt marker,
   at ~human speed. UI is developed against it; CI/E2E never call a real provider.
 - Voice = structured profile (reliable) + up to 2 raw samples chosen for platform diversity (flavor).
+  Redirects carry a per-host cookie jar and browser-like headers (cookie-gated 302→same-URL
+  loops were breaking real blogs); loops are detected by URL revisit before the 10-hop cap.
