@@ -11,6 +11,7 @@ const EnvSchema = z
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
     ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-").optional(),
 
+    GOOGLE_MODEL_ID: z.string().min(1).optional(),
     // Database
     DATABASE_URL: z.url().startsWith("postgres"),
 
@@ -22,7 +23,13 @@ const EnvSchema = z
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().startsWith("/"),
     NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: z.string().startsWith("/"),
     NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: z.string().startsWith("/"),
+
+    // Transcripts
     SUPADATA_API_KEY: z.string().min(1).optional(),
+
+    // Redis
+    UPSTASH_REDIS_REST_URL: z.url(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
   })
   .superRefine((e, ctx) => {
     if (e.AI_PROVIDER === "google" && !e.GOOGLE_GENERATIVE_AI_API_KEY) {
