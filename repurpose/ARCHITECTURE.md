@@ -45,6 +45,14 @@ lib → db
 components and lib never import from features. features never import from app.
 
 ## Decisions log
+- The workspace URL does NOT change during a generation: App Router treats a pathname
+  replaceState as navigation and remounts the component mid-stream. Instead the topbar exposes a
+  permalink to /workspace/[id], which hydrates from the DB on load.
+- TODO Phase 11: migrate src/proxy.ts off Clerk's deprecated createRouteMatcher to resource-based
+  checks (auth() inside each layout/route). Proxy would keep only the RSC 401 behavior.
+- Gemini free tier is 20 req/day PER MODEL; SDK retries multiply spend. Default model is flash-lite
+  (separate, larger bucket), maxRetries=1, GOOGLE_MODEL_ID overrides per environment. Local dev runs
+  on AI_PROVIDER=mock. Billing must be enabled on the Google project before public launch.
 - YouTube transcripts via Supadata (`text=true`, no timestamps); title/channel via YouTube oEmbed,
   best-effort. Thumbnails come from i.ytimg.com only — we never proxy arbitrary article images.
 - Articles via Readability + jsdom on the Node runtime (`serverExternalPackages: ["jsdom"]`).
@@ -65,3 +73,6 @@ components and lib never import from features. features never import from app.
 - Voice = structured profile (reliable) + up to 2 raw samples chosen for platform diversity (flavor).
   Redirects carry a per-host cookie jar and browser-like headers (cookie-gated 302→same-URL
   loops were breaking real blogs); loops are detected by URL revisit before the 10-hop cap.
+- Article bodies are handled as bytes first: decompressed by Content-Encoding OR gzip/zlib magic,
+  binary-sniffed (PNG/JPEG/PDF/zip magics, NUL/control-char ratio), charset from header or <meta>.
+  Real servers send gzip without a usable Content-Encoding and images without Content-Type.
