@@ -47,3 +47,6 @@ export const YOUTUBE_DESCRIPTION_MAX_CHARS = 5_000;
 // UX
 export const AUTOSAVE_DEBOUNCE_MS = 800;
 export const UNDO_WINDOW_MS = 5_000;
+// History
+export const HISTORY_PAGE_SIZE = 20;
+export const SEARCH_DEBOUNCE_MS = 300;
