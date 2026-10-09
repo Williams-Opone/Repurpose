@@ -45,6 +45,13 @@ lib → db
 components and lib never import from features. features never import from app.
 
 ## Decisions log
+- Delete is a soft delete (generations.deleted_at) + an Undo toast that restores. A server-side
+  setTimeout would not survive a serverless invocation — soft delete is the durable version.
+  Next step at scale: a cron purge of rows deleted > 30 days ago.
+- History pagination is keyset (createdAt, id) over the existing (user_id, created_at desc) index,
+  not OFFSET. Search is ILIKE over title + content; at real volume this becomes pg_trgm + GIN.
+- "Use as new source" is /workspace?from=<id> — server-loads the source only. No client storage,
+  shareable, costs no quota.
 - The workspace URL does NOT change during a generation: App Router treats a pathname
   replaceState as navigation and remounts the component mid-stream. Instead the topbar exposes a
   permalink to /workspace/[id], which hydrates from the DB on load.

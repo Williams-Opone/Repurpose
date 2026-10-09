@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-
+import { ArrowUpRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Topbar } from "@/components/layout/topbar";
@@ -27,20 +26,29 @@ import { GenerateButton } from "./generate-button";
 import { OutputPanel } from "./output-panel";
 import { UsagePill } from "./usage-pill";
 
+type SourceFields = Pick<Generation, "sourceType" | "sourceTitle" | "sourceUrl" | "sourceContent">;
+
+/** A persisted generation reopened at /workspace/[id]. */
 export type WorkspaceInitial = {
-  generation: Pick<
-    Generation,
-    "id" | "formats" | "sourceType" | "sourceTitle" | "sourceUrl" | "sourceContent" | "voiceId"
-  >;
+  generation: SourceFields & Pick<Generation, "id" | "formats" | "voiceId">;
   outputs: InitialOutput[];
   edited: Record<string, OutputContent>;
 };
 
-type Props = { voices: VoiceOption[]; entitlements: Entitlements; initial: WorkspaceInitial | null };
+/** A past source reused via /workspace?from=<id> — source only, no outputs. */
+export type WorkspacePrefill =
+  (SourceFields & { formats: Format[]; voiceId: string | null }) | null;
+
+type Props = {
+  voices: VoiceOption[];
+  entitlements: Entitlements;
+  initial: WorkspaceInitial | null;
+  prefill?: WorkspacePrefill;
+};
 
 const DEFAULT_FORMATS: Format[] = ["twitter_thread", "linkedin_post", "newsletter_section"];
 
-function sourceFromGeneration(g: WorkspaceInitial["generation"]): Source {
+function sourceFromFields(g: SourceFields): Source {
   const videoId = g.sourceUrl ? parseYouTubeUrl(g.sourceUrl) : null;
   return buildSource({
     type: g.sourceType,
@@ -51,21 +59,28 @@ function sourceFromGeneration(g: WorkspaceInitial["generation"]): Source {
   });
 }
 
-export function Workspace({ voices, entitlements, initial }: Props) {
+export function Workspace({ voices, entitlements, initial, prefill = null }: Props) {
   const router = useRouter();
+
   const [source, setSource] = useState<Source | null>(
-    initial ? sourceFromGeneration(initial.generation) : null,
+    initial ? sourceFromFields(initial.generation) : prefill ? sourceFromFields(prefill) : null,
   );
   const [selected, setSelected] = useState<Format[]>(
-    initial?.generation.formats ?? DEFAULT_FORMATS,
+    initial?.generation.formats ?? prefill?.formats ?? DEFAULT_FORMATS,
   );
   const [order, setOrder] = useState<Format[]>(initial?.generation.formats ?? []);
   const [voiceId, setVoiceId] = useState<string | null>(
-    initial?.generation.voiceId ?? voices.find((v) => v.isDefault)?.id ?? voices[0]?.id ?? null,
+    initial?.generation.voiceId ??
+      prefill?.voiceId ??
+      voices.find((v) => v.isDefault)?.id ??
+      voices[0]?.id ??
+      null,
   );
   const [sourceKey, setSourceKey] = useState(0);
-    // Tracked locally so finishing a generation never triggers a server navigation.
+
+  // Tracked locally so finishing a generation never triggers a server navigation.
   const [remaining, setRemaining] = useState(entitlements.remaining);
+
   const { state, generate, regenerate, cancel, reset } = useGenerationStream(
     initialStateFrom(
       initial
@@ -78,7 +93,7 @@ export function Workspace({ voices, entitlements, initial }: Props) {
     ),
   );
 
- // Announce completion once per run. The URL never changes mid-flight — the App Router
+  // Announce completion once per run. The URL never changes mid-flight — the App Router
   // treats a pathname replaceState as a navigation and would remount this component.
   const wasRunning = useRef(false);
   useEffect(() => {
@@ -173,7 +188,9 @@ export function Workspace({ voices, entitlements, initial }: Props) {
           </div>
           <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-line bg-bg-0 px-6 py-4">
             <span className="font-mono text-xs text-fg-2">
-              {source ? `${source.wordCount.toLocaleString()} words in` : "Nothing to work with yet"}
+              {source
+                ? `${source.wordCount.toLocaleString()} words in`
+                : "Nothing to work with yet"}
             </span>
             <GenerateButton
               count={selected.length || 1}

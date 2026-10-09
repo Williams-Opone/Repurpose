@@ -1,15 +1,34 @@
-import { Topbar } from "@/components/layout/topbar";
+import { z } from "zod";
+
+import { getEntitlements } from "@/features/billing";
+import { Workspace } from "@/features/generate/components/workspace";
+import { getGenerationSource } from "@/features/history";
+import { listVoices } from "@/features/voice";
+import { requireUserId } from "@/lib/auth";
 
 export const metadata = { title: "Workspace" };
 
-// Placeholder — replaced by the real workspace in Phase 7.
-export default function WorkspacePage() {
+export default async function WorkspacePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const userId = await requireUserId();
+  const { from } = await searchParams;
+  const fromId = typeof from === "string" && z.uuid().safeParse(from).success ? from : null;
+
+  const [voices, entitlements, prefill] = await Promise.all([
+    listVoices(userId),
+    getEntitlements(userId),
+    fromId ? getGenerationSource(fromId, userId) : null,
+  ]);
+
   return (
-    <>
-      <Topbar title="Workspace" />
-      <main className="flex flex-1 items-center justify-center p-8">
-        <p className="font-mono text-sm text-fg-2">workspace · arrives in phase 7</p>
-      </main>
-    </>
+    <Workspace
+      voices={voices.map((v) => ({ id: v.id, name: v.name, isDefault: v.isDefault }))}
+      entitlements={entitlements}
+      initial={null}
+      prefill={prefill}
+    />
   );
 }

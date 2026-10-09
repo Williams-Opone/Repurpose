@@ -51,6 +51,7 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
   Every task's system prompt contains a stable marker phrase so `ai-mock.ts` can pick a fixture.
 - Cross-feature: server code imports another feature's `index.ts`; client-safe code (schema, types,
   pure helpers) is imported by path, e.g. `@/features/ingest/schema`.
+
 ## Non-negotiable rules
 
 1. **Types flow from the DB schema outward.** Use `InferSelectModel` / Zod `z.infer`.
@@ -69,12 +70,14 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 8. **Server Components by default.** Add `"use client"` only for interactivity, and push it to the leaf.
 9. **Secrets never reach the client.** Only `NEXT_PUBLIC_*` vars in client code. `src/lib/env.ts` is the
    only place `process.env` is read.
-13. Content enters the system ONLY as a `Source` from `features/ingest` (`buildSource` for text,
+10. Content enters the system ONLY as a `Source` from `features/ingest` (`buildSource` for text,
     `fetchSource` for links). Nothing downstream accepts raw strings or URLs.
-14. Never `fetch()` a user-supplied URL directly. `features/ingest/url.ts#fetchPublic` is the only
+11. Never `fetch()` a user-supplied URL directly. `features/ingest/url.ts#fetchPublic` is the only
     outbound fetcher: private hosts blocked, redirects validated per hop, body capped, timeout set.
-15. Provider errors never reach the UI. Map them to specific human `AppError` messages inside the
+12. Provider errors never reach the UI. Map them to specific human `AppError` messages inside the
     feature (see `youtube.ts#mapSupadataError`).
+20. Destructive actions use soft delete + an Undo toast, never a confirm dialog and never a
+    server-side timer. Every list query filters `isNull(deletedAt)`.
 ## Motion & design rules
 
 - Import springs and variants from `src/components/motion/motion.config.ts`. **Never hardcode a duration,
