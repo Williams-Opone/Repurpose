@@ -45,6 +45,7 @@ lib → db
 components and lib never import from features. features never import from app.
 
 ## Decisions log
+
 - Delete is a soft delete (generations.deleted_at) + an Undo toast that restores. A server-side
   setTimeout would not survive a serverless invocation — soft delete is the durable version.
   Next step at scale: a cron purge of rows deleted > 30 days ago.

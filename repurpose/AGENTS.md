@@ -76,8 +76,9 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
     outbound fetcher: private hosts blocked, redirects validated per hop, body capped, timeout set.
 12. Provider errors never reach the UI. Map them to specific human `AppError` messages inside the
     feature (see `youtube.ts#mapSupadataError`).
-20. Destructive actions use soft delete + an Undo toast, never a confirm dialog and never a
+13. Destructive actions use soft delete + an Undo toast, never a confirm dialog and never a
     server-side timer. Every list query filters `isNull(deletedAt)`.
+
 ## Motion & design rules
 
 - Import springs and variants from `src/components/motion/motion.config.ts`. **Never hardcode a duration,
