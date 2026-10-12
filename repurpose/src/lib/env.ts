@@ -12,6 +12,11 @@ const EnvSchema = z
     ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-").optional(),
 
     GOOGLE_MODEL_ID: z.string().min(1).optional(),
+    // Billing
+    BILLING_PROVIDER: z.enum(["paystack", "mock"]).default("mock"),
+    PAYSTACK_SECRET_KEY: z.string().startsWith("sk_").optional(),
+    PAYSTACK_PLAN_PRO_MONTHLY: z.string().startsWith("PLN_").optional(),
+    PAYSTACK_PLAN_PRO_YEARLY: z.string().startsWith("PLN_").optional(),
     // Database
     DATABASE_URL: z.url().startsWith("postgres"),
 
@@ -45,6 +50,22 @@ const EnvSchema = z
         path: ["ANTHROPIC_API_KEY"],
         message: "Required when AI_PROVIDER=anthropic",
       });
+    }
+    if (e.BILLING_PROVIDER === "paystack") {
+      const missing = (
+        [
+          ["PAYSTACK_SECRET_KEY", e.PAYSTACK_SECRET_KEY],
+          ["PAYSTACK_PLAN_PRO_MONTHLY", e.PAYSTACK_PLAN_PRO_MONTHLY],
+          ["PAYSTACK_PLAN_PRO_YEARLY", e.PAYSTACK_PLAN_PRO_YEARLY],
+        ] as const
+      ).filter(([, v]) => !v);
+      for (const [path] of missing) {
+        ctx.addIssue({
+          code: "custom",
+          path: [path],
+          message: "Required when BILLING_PROVIDER=paystack",
+        });
+      }
     }
   });
 

@@ -20,6 +20,7 @@ import {
   PLANS,
   PLATFORMS,
   SOURCE_TYPES,
+  type BillingProviderId,
   type Format,
   type OutputContent,
   type SubscriptionStatus,
@@ -138,9 +139,13 @@ export const subscriptions = pgTable("subscriptions", {
     .references(() => users.id, { onDelete: "cascade" }),
   plan: planEnum("plan").notNull().default("free"),
   status: text("status").$type<SubscriptionStatus>().notNull().default("active"),
-  stripeCustomerId: text("stripe_customer_id").unique(),
-  stripeSubscriptionId: text("stripe_subscription_id").unique(),
-  stripePriceId: text("stripe_price_id"),
+  // Provider-neutral: Paystack today, Stripe/Lemon Squeezy tomorrow.
+  provider: text("provider").$type<BillingProviderId>(),
+  providerCustomerId: text("provider_customer_id"),
+  providerSubscriptionId: text("provider_subscription_id").unique(),
+  providerPlanId: text("provider_plan_id"),
+  // Provider-specific bits we must keep (e.g. Paystack's email_token for cancellation).
+  providerMeta: jsonb("provider_meta").$type<Record<string, string>>(),
   currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   ...timestamps,
@@ -161,8 +166,8 @@ export const usage = pgTable(
 
 // Idempotency ledger for ALL inbound webhooks (Clerk now, Stripe in Phase 9).
 export const processedEvents = pgTable("processed_events", {
-  id: text("id").primaryKey(), // provider's event id
-  provider: text("provider").$type<"clerk" | "stripe">().notNull(),
+  id: text("id").primaryKey(), // provider event id, or a hash of the raw body
+  provider: text("provider").notNull(),
   type: text("type").notNull(),
   processedAt: timestamp("processed_at", { withTimezone: true }).defaultNow().notNull(),
 });

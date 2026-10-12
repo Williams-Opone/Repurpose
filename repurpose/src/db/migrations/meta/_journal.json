@@ -15,6 +15,13 @@
       "when": 1791539252731,
       "tag": "0001_brief_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791581168413,
+      "tag": "0002_bright_vulture",
+      "breakpoints": true
     }
   ]
 }

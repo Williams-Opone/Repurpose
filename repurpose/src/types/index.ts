@@ -87,3 +87,8 @@ export type OutputContent =
 
 export type SubscriptionStatus =
   "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete";
+export const BILLING_PROVIDERS = ["paystack", "mock"] as const;
+export type BillingProviderId = (typeof BILLING_PROVIDERS)[number];
+
+export const BILLING_INTERVALS = ["month", "year"] as const;
+export type BillingInterval = (typeof BILLING_INTERVALS)[number];
