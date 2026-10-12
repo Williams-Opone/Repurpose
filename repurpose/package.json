@@ -1,7 +1,11 @@
 {
   "name": "repurpose",
+  "packageManager": "pnpm@9.15.4",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -18,6 +22,7 @@
     "db:migrate": "drizzle-kit migrate",
     "webhook": "node --env-file=.env.local scripts/send-webhook.mjs",
     "db:studio": "drizzle-kit studio"
+    
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -86,4 +91,5 @@
     "typescript": "^5",
     "vitest": "^5.0.1"
   }
+  
 }
