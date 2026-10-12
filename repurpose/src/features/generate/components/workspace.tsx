@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
 import type { Generation } from "@/db/schema";
+import { UpgradeSheet } from "@/features/billing/components/upgrade-sheet";
 import type { Entitlements } from "@/features/billing/quota";
 import { SourceInput } from "@/features/ingest/components/source-input";
 import { parseYouTubeUrl, youtubeThumbnail } from "@/features/ingest/detect";
@@ -80,6 +81,7 @@ export function Workspace({ voices, entitlements, initial, prefill = null }: Pro
 
   // Tracked locally so finishing a generation never triggers a server navigation.
   const [remaining, setRemaining] = useState(entitlements.remaining);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const { state, generate, regenerate, cancel, reset } = useGenerationStream(
     initialStateFrom(
@@ -115,7 +117,10 @@ export function Workspace({ voices, entitlements, initial, prefill = null }: Pro
     setOrder(selected);
     const err = await generate({ source, formats: selected, voiceId });
     if (err) {
-      if (err.code === "QUOTA_EXCEEDED") setRemaining(0);
+      if (err.code === "QUOTA_EXCEEDED") {
+        setRemaining(0);
+        setUpgradeOpen(true);
+      }
       toast.error(err.message);
       return;
     }
@@ -200,6 +205,7 @@ export function Workspace({ voices, entitlements, initial, prefill = null }: Pro
               quotaExhausted={quotaExhausted}
               onGenerate={() => void onGenerate()}
               onCancel={cancel}
+              onUpgrade={() => setUpgradeOpen(true)}
             />
           </footer>
         </section>
@@ -214,6 +220,8 @@ export function Workspace({ voices, entitlements, initial, prefill = null }: Pro
           />
         </section>
       </div>
+
+      <UpgradeSheet open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </>
   );
 }
