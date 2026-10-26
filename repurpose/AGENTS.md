@@ -109,7 +109,8 @@ Vercel AI SDK + Anthropic, Upstash Redis. Package manager is **pnpm**. React Com
 - Don't call real AI or Stripe in tests. Use `AI_PROVIDER=mock` and Stripe test fixtures.
 
 ## Do NOT
-
+- Import `cn` from "cn" (a junk npm package). It lives at `@/lib/cn`. After any `shadcn add`, run
+  `grep -rn 'from "cn"' src` and fix any hits.
 - Install a new dependency without stating why in the PR/commit body.
 - Add a new top-level folder in `src/`.
 - Use `fetch` to call our own API routes from server code — call the function directly.
