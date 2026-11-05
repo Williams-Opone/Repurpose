@@ -33,7 +33,9 @@ export type RunArgs = {
 type Emit = (event: StreamEvent) => void;
 
 const isRetryable = (e: unknown) =>
-  NoObjectGeneratedError.isInstance(e) || e instanceof FormatValidationError || e instanceof ZodError;
+  NoObjectGeneratedError.isInstance(e) ||
+  e instanceof FormatValidationError ||
+  e instanceof ZodError;
 
 const describeFailure = (e: unknown) =>
   e instanceof Error ? e.message.slice(0, 300) : "output did not match the schema";
@@ -106,7 +108,6 @@ async function runFormat(format: Format, args: RunArgs, emit: Emit): Promise<boo
           temperature: 0.7,
           maxRetries: 1,
           abortSignal: signal,
-          
         });
 
         for await (const partial of result.partialObjectStream) {
@@ -177,6 +178,7 @@ async function runFormat(format: Format, args: RunArgs, emit: Emit): Promise<boo
 }
 
 /** Runs every format in parallel and multiplexes them into one SSE byte stream. */
+/** Runs every format in parallel and multiplexes them into one SSE byte stream. */
 export function runGeneration(args: RunArgs): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
@@ -196,7 +198,9 @@ export function runGeneration(args: RunArgs): ReadableStream<Uint8Array> {
 
       const results = await Promise.all(args.formats.map((f) => runFormat(f, args, emit)));
       const failedFormats = args.formats.filter((_, i) => !results[i]);
-      const status = failedFormats.length === args.formats.length ? "failed" : "complete";
+      // A single-format regenerate must never flip a complete generation to "failed".
+      const allFailed = failedFormats.length === args.formats.length;
+      const status = allFailed && args.refundOnFailure ? "failed" : "complete";
 
       try {
         await db

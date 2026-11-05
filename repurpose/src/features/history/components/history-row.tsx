@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FORMAT_META } from "@/types";
-import { formatRelativeTime } from "@/lib/utils";
+import { RelativeTime } from "@/components/relative-time";
 
 import type { HistoryItem } from "../queries";
 
@@ -59,7 +59,7 @@ export function HistoryRow({ item, onDelete }: { item: HistoryItem; onDelete: ()
             </>
           )}
           <span aria-hidden>·</span>
-          <time dateTime={item.createdAt.toISOString()}>{formatRelativeTime(item.createdAt)}</time>
+          <RelativeTime date={item.createdAt} />
         </p>
       </div>
 

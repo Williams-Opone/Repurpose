@@ -4,8 +4,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import type { LanguageModel } from "ai";
 
 import { mockLanguageModel } from "./ai-mock";
-import { Semaphore } from "./semaphore";          // ← add to imports at top
-import { AI_MODELS, MODEL_CONCURRENCY } from "./constants";                             
+import { Semaphore } from "./semaphore"; // ← add to imports at top
+import { AI_MODELS, MODEL_CONCURRENCY } from "./constants";
 import { env } from "./env";
 import { assertNever } from "./utils";
 
@@ -26,8 +26,7 @@ export function getModel(): LanguageModel {
   }
 }
 
-  // ← extend existing import
+// ← extend existing import
 
 /** Shared per-provider gate so N formats don't hit the provider in the same instant. */
-export const modelGate = new 
-Semaphore(MODEL_CONCURRENCY[env.AI_PROVIDER]);
+export const modelGate = new Semaphore(MODEL_CONCURRENCY[env.AI_PROVIDER]);

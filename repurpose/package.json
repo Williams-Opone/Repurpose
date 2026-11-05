@@ -17,7 +17,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "webhook": "node --env-file=.env.local scripts/send-webhook.mjs",

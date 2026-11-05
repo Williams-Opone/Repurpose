@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { SourceInput } from "@/features/ingest/components/source-input";
-import type { Source } from "@/features/ingest/types";
+
 import { PlatformIcon } from "@/components/icons/platforms";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
@@ -40,10 +39,10 @@ export default function DevPage() {
   const [count, setCount] = useState(3);
   const [checked, setChecked] = useState(false);
   const [listKey, setListKey] = useState(0);
-  const [source, setSource] = useState<Source | null>(null);
+
   return (
     <div className="flex">
-      <Sidebar footer={<div className="px-2 text-xs text-fg-2">user menu → phase 3</div>} />
+      <Sidebar footer={<div className="px-2 text-xs text-fg-2">kitchen sink</div>} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar title="Kitchen sink" actions={<Button size="sm">Action</Button>} />
@@ -190,23 +189,6 @@ export default function DevPage() {
               {PLATFORMS.map((p) => (
                 <PlatformIcon key={p} platform={p} size={20} />
               ))}
-            </div>
-          </Section>
-          <Section title="Ingest: paste text, drop a .txt, or paste a YouTube / article link">
-            <div className="grid max-w-5xl gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <SourceInput value={source} onChange={setSource} />
-              <pre className="overflow-auto rounded-md surface-2 p-4 font-mono text-xs text-fg-1">
-                {source
-                  ? JSON.stringify(
-                      {
-                        ...source,
-                        text: `${source.text.slice(0, 160)}… (${source.text.length} chars)`,
-                      },
-                      null,
-                      2,
-                    )
-                  : "null"}
-              </pre>
             </div>
           </Section>
         </main>

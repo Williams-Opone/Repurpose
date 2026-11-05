@@ -9,7 +9,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { listVoices } from "@/features/voice";
 import { Chips } from "@/features/voice/components/voice-profile-card";
 import { requireUserId } from "@/lib/auth";
-import { formatRelativeTime } from "@/lib/utils";
+import { RelativeTime } from "@/components/relative-time";
+// remove: import { formatRelativeTime } from "@/lib/utils";
 
 export const metadata = { title: "Brand voice" };
 
@@ -66,7 +67,7 @@ export default async function VoicesPage() {
                       <div>
                         <p className="text-sm font-medium">{v.name}</p>
                         <p className="font-mono text-xs text-fg-2">
-                          {v.samples.length} samples · {formatRelativeTime(v.updatedAt)}
+                          {v.samples.length} samples · <RelativeTime date={v.updatedAt} />
                         </p>
                       </div>
                     </div>
